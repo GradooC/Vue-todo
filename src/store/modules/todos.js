@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const state = {
-  todos: []
+  todos: [],
+  todosAmount: 200
 };
 
 const getters = {
@@ -15,15 +16,45 @@ const actions = {
     );
 
     commit('setTodos', response.data);
-  }
+  },
 
-  async addTodo({commit}, title) {
+  async addTodo({ commit }, title) {
+    const response = await axios.post(
+      'https://jsonplaceholder.typicode.com/todos',
+      { title, completed: false }
+    );
 
+    commit('newTodo', response.data);
+  },
+
+  async deleteTodo({ commit }, todoId) {
+    await axios.delete(`https://jsonplaceholder.typicode.com/todos/${todoId}`);
+
+    commit('removeTodo', todoId);
+  },
+
+  async filterTodos({ commit }, e) {
+    console.log("TCL: filterTodos -> e", e)
+    const {target: {options}} = e;
+    // commit('filterTodos', amount);
+    const limit = options[options.selectedIndex].innerText;
+    console.log("TCL: filterTodos -> limit", limit)
   }
 };
 
 const mutations = {
-  setTodos: (state, todos) => (state.todos = todos)
+  setTodos: (state, todos) => {
+    state.todos = todos;
+  },
+  newTodo: (state, todo) => {
+    state.todos = [todo, ...state.todos];
+  },
+  removeTodo: (state, todoId) => {
+    state.todos = state.todos.filter(todo => todo.id !== todoId);
+  },
+  filterTodos: (state, amount) => {
+    state.todosAmount = amount;
+  }
 };
 
 export default {
